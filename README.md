@@ -10,33 +10,14 @@
 
 感谢[@xCipHanD](https://github.com/xCipHanD)提供自动高亮超出容量课程、链接教授名到[牛娃课程评价社区](https://ncesnext.com/)、按回车键搜索课程（而不是只能点按钮）的功能。[@Cypher-Bruce](https://github.com/Cypher-Bruce)优化了积分计算的功能。[@KevinHuge](https://github.com/KevinHuge)提供自动暂存已选课程，当用户成功暂存、删除课程时，可以获得即时反馈，导出暂存课表图片的功能。
 
-## Looking for maintainer
-
-我目前已经研二，tis中已经没有可选的课程，无法再测试该脚本。我后续也不会再对脚本进行开发。如果有人想接手项目的后续维护，请通过QQ或issue联系我，我开放合并pr的权限。
-
-目前活跃的竞品：https://c.x-d.fun, 一个自动排课工具。by [@xCipHanD](https://github.com/xCipHanD)。
+在[@Fros1er](https://github.com/Fros1er/)的代码基础上，使用LLM工具对代码进行了修改，使数据保存在GM_setValue中，增加了脚本的健壮性且便于数据的备份。
 
 ## 使用说明
 
 该脚本可以通过脚本管理器（如Tampermonkey）安装或在浏览器内直接导入。
 
 ### 1. 通过脚本管理器安装  
-把[SUSTechTISHelper.js](SUSTechTISHelper.js)添加进管理器就行。
-### 2. 通过浏览器console导入  
-打开tis和选课界面，在页面中**除标题栏和底栏的位置**右键-检查，选择上方的Console。
-
-这里需要确保console标签下面一栏Filter左边没有top字样，然后将以下代码粘贴进console，回车即可。
-   ``` js
-      $(document.head).append('<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Fros1er/Timetable/Timetables.min.js">');
-      $(document.head).append('<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Fros1er/SUSTechTISHelper/SUSTechTISHelper.min.js">');
-      $(document.head).append('<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Fros1er/SUSTechTISHelper/SUSTechTISHelper.min.css">');
-   ```
-
-导入后，可以在选课页的左侧看到多出来的几个按钮。
-
-## 一些截图
-![](img/1.png)
-![](img/2.png)
+把[SUSTechTISHelper2.js](SUSTechTISHelper2.js)添加进管理器就行。
 
 ## LICENSE
 本项目由Apache-2.0协议开源，并使用由MIT协议开源的[Timetable](https://github.com/Hzy0913/Timetable)（虽然用的是自己fork的版本）
