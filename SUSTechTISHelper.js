@@ -1,12 +1,14 @@
 // ==UserScript==
-// @name         SUSTech TIS Helper
+// @name         SUSTech TIS Helper2
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  一个让妮可选课系统方便点的脚本
 // @author       Froster
 // @match        https://tis.sustech.edu.cn/Xsxk*
 // @grant        GM_addStyle
 // @grant        unsafeWindow
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @require      https://cdn.jsdelivr.net/gh/Fros1er/Timetable/Timetables.min.js
 // @require      https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js
 // ==/UserScript==
@@ -172,7 +174,7 @@ function genTimetableOption(isInit) {
                         })
                     }
                 }
-                localStorage.setItem("timetableArray", JSON.stringify(unsafeWindow.timetableArray))
+                GM_setValue("timetableArray", JSON.stringify(unsafeWindow.timetableArray))
                 unsafeWindow.timetable.setOption(genTimetableOption(false));
                 unsafeWindow.showToast(`课程 "${courseName}" 已从暂存课表移除`);
             }
@@ -187,11 +189,10 @@ function genTimetableOption(isInit) {
 
 function getColumnIndexByHeaderText(headerText) {
     let index = -1;
-    // 遍历所有表头单元格
     $('.ivu-table-header th').each(function (i) {
         if ($(this).text().trim() === headerText) {
             index = i;
-            return false; // 找到后即退出循环
+            return false;
         }
     });
     return index;
@@ -207,7 +208,7 @@ function addBtn() {
             let exportBtn = $('<button class="ivu-btn ivu-btn-info"> \
                 <span>导出PNG</span></button>');
             exportBtn.on('click', function (e) {
-                e.stopPropagation(); // 防止点击后 modal 关闭
+                e.stopPropagation();
                 unsafeWindow.showToast('正在生成图片，请稍候...');
                 html2canvas(document.querySelector('#courseTable'), {
                     backgroundColor: '#fefefe',
@@ -238,19 +239,16 @@ function addBtn() {
                 <span>暂存课表查看</span></button>'
             )
             btn.on('click', function () {
-                // 自动暂存所有“已选课程”
                 let stashedNew = false;
-                // 确认当前在“已选课程”标签页
                 if ($(".ivu-layout .ivu-tabs-nav .ivu-tabs-tab-active").text().includes("已选")) {
                     console.log("正在从'已选课程'自动暂存...");
-                    // 遍历所有课程行
                     $('.ivu-table-body .ivu-table-row').each(function () {
                         if (unsafeWindow.stashCourseFromRow($(this))) {
                             stashedNew = true;
                         }
                     });
                     if (stashedNew) {
-                        localStorage.setItem("timetableArray", JSON.stringify(unsafeWindow.timetableArray));
+                        GM_setValue("timetableArray", JSON.stringify(unsafeWindow.timetableArray));
                         console.log("自动暂存完成");
                     }
                 }
@@ -269,43 +267,43 @@ function addBtn() {
                         [[], [], [], [], [], [], [], [], [], [], []],
                         [[], [], [], [], [], [], [], [], [], [], []]
                     ];
-                    localStorage.setItem("timetableArray", JSON.stringify(unsafeWindow.timetableArray))
+                    GM_setValue("timetableArray", JSON.stringify(unsafeWindow.timetableArray))
                 }
             })
             let foldbtn = $('<button class="ivu-btn ivu-btn-info"><span>课程时间表</span></button>')
             $('.ivu-layout-header button').eq(6).after(removeAllBtn).after(btn).after(foldbtn)
             $('#app').append(modal)
-            unsafeWindow.timetableArray = JSON.parse(localStorage.getItem("timetableArray")) || [
+
+            // 使用 GM_getValue 读取数据
+            const savedData = GM_getValue("timetableArray", null);
+            unsafeWindow.timetableArray = savedData ? JSON.parse(savedData) : [
                 [[], [], [], [], [], [], [], [], [], [], []],
                 [[], [], [], [], [], [], [], [], [], [], []],
                 [[], [], [], [], [], [], [], [], [], [], []],
                 [[], [], [], [], [], [], [], [], [], [], []],
                 [[], [], [], [], [], [], [], [], [], [], []]
             ];
+
             unsafeWindow.timetable = new Timetables(genTimetableOption(true))
             modal.hide();
-            // Toast 提示函数
+
             unsafeWindow.showToast = function (message) {
                 let toast = $('<div class="toast-notification"></div>');
                 toast.text(message);
                 $('body').append(toast);
 
-                // 使用 setTimeout 确保浏览器有时间渲染元素，再添加 show class 触发动画
                 setTimeout(() => {
                     toast.addClass('show');
                 }, 10);
 
-                // 1秒后自动开始消失动画
                 setTimeout(() => {
                     toast.removeClass('show');
-                    // 在动画结束后从 DOM 中移除元素，防止页面上残留不可见的元素
                     setTimeout(() => {
                         toast.remove();
                     }, 500);
                 }, 1000);
             }
 
-            // 将暂存逻辑封装为单独函数
             unsafeWindow.stashCourseFromRow = function (row) {
                 let teacher, clsName;
                 const timeStrs = [];
@@ -333,7 +331,7 @@ function addBtn() {
                     });
                 }
 
-                if (!clsName) return false; // 如果没有课程名称，直接返回 false
+                if (!clsName) return false;
 
                 let changed = false;
                 for (let s of timeStrs) {
@@ -361,7 +359,7 @@ function addBtn() {
                     courseName = $('span', row.find('td').eq(0)).html() || $('span', row.find('td').eq(3)).html();
                 }
                 if (unsafeWindow.stashCourseFromRow(row)) {
-                    localStorage.setItem("timetableArray", JSON.stringify(unsafeWindow.timetableArray));
+                    GM_setValue("timetableArray", JSON.stringify(unsafeWindow.timetableArray));
                     unsafeWindow.showToast(`课程 "${courseName}" 已成功暂存！`);
                 } else {
                     unsafeWindow.showToast(`课程 "${courseName}" 已存在。`);
@@ -381,7 +379,6 @@ function addBtn() {
     return
 }
 
-// 自动高亮已选超出容量的课程
 function hightlightRiskyCourses() {
     $('.ivu-table-cell-slot').each(function () {
         var matches = $(this).text().replaceAll('\n', '').replaceAll('\t', '').match(/本科生容量：(\d+).*已选人数：(\d+).*/);
@@ -390,10 +387,8 @@ function hightlightRiskyCourses() {
             if (parseInt(matches[2]) == parseInt(matches[1])) $(this).css('color', 'orange');
         }
     });
-
 }
 
-// 链接教师到评教平台
 function addSearchLinks() {
     var links = $('a[href="javascript:void(0);"]').filter(function () {
         return $(this).text().trim() !== '';
@@ -404,7 +399,6 @@ function addSearchLinks() {
     });
 }
 
-// 隐藏及显示课程信息
 function showInfo() {
     $('.ivu-tag-text').show();
     $('.ivu-tag-text').parent().addClass('ivu-tag-checked');
@@ -456,7 +450,6 @@ function getCookie(name) {
 }
 
 function handleSearchInput() {
-    // 搜索框按下回车键时触发搜索
     var searchInput = $("input[placeholder=课程]");
     if (searchInput.length) {
         $(searchInput[0]).on('keydown', function (e) {
@@ -474,10 +467,7 @@ let used_point;
 let isFetching = false;
 
 async function fetchPointFromAPI() {
-
-    if (isFetching) {
-        return;
-    }
+    if (isFetching) return;
     isFetching = true;
 
     const last_year = current_year - 1;
@@ -506,14 +496,13 @@ async function fetchPointFromAPI() {
         const selected_course = data["yxkcList"];
         remaining_point = parseInt(data["xsxkPage"]["xkgzszOne"]["jfxs"]);
         used_point = selected_course.reduce((sum, course) => {
-            if (course["xkxs"] !== null) { // 后置课程此项为null
+            if (course["xkxs"] !== null) {
                 sum += parseInt(course["xkxs"]);
             }
             return sum;
         }, 0);
 
     } catch (error) {
-        // console.error(error);
         return;
     }
 
@@ -531,16 +520,10 @@ async function fetchPointFromAPI() {
 }
 
 function checkPointUpdate() {
-
     let need_update = false;
 
-    // 检查是否需要更新年份和学期
     const regex = /^(\d{4})(春|夏|秋)季$/;
-    const seasonMapping = {
-        春: 2,
-        夏: 3,
-        秋: 1
-    };
+    const seasonMapping = { 春: 2, 夏: 3, 秋: 1 };
     const selectedElements = $(".ivu-layout .ivu-select-selection .ivu-select-selected-value");
     let temp_year, temp_semester;
 
@@ -568,9 +551,8 @@ function checkPointUpdate() {
         return;
     }
 
-    // 检查是否需要更新已用分数和剩余分数
     const tab = $(".ivu-layout .ivu-tabs-nav .ivu-tabs-tab-active")
-    if (tab.text().includes("已选")) { // 已选课程页面
+    if (tab.text().includes("已选")) {
         const inputs = $(".ivu-table-fixed-right .ivu-table-row td:not(.ivu-table-hidden) input");
         let temp_used_point = 0;
         inputs.each(function () {
@@ -580,7 +562,7 @@ function checkPointUpdate() {
         if (temp_used_point !== used_point) {
             need_update = true;
         }
-    } else { // 选课页面
+    } else {
         const remainingPointsElement = $(".ivu-layout .ivu-layout-header .ivu-alert-message").find("span:contains('剩余积分')").text();
         const remainingPointsMatch = remainingPointsElement.match(/剩余积分:(\d+(\.\d+)?)/);
         if (remainingPointsMatch) {
