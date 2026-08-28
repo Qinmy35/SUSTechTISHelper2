@@ -22,11 +22,8 @@
 ## LICENSE
 本项目由Apache-2.0协议开源，并使用由MIT协议开源的[Timetable](https://github.com/Hzy0913/Timetable)（虽然用的是自己fork的版本）
 
-## Special Thanks
-感谢[牛娃小镇](https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=Mzg4MjcwNzQxOQ==&scene=124#wechat_redirect)的支持！ 
-
 ## 免责声明
 
 本项目基于Apache-2.0协议开源。
-项目以源代码的方式分发，仅供交流学习使用，不作为网络产品提供。本人（[@Fros1er](https://github.com/Fros1er/)）不将本项目用于销售。若他人将本项目作为产品或产品的一部分提供（无论是否销售），应依照相关法律法规，自行承担安全维护等责任。
+项目以源代码的方式分发，仅供交流学习使用，不作为网络产品提供。[@Fros1er](https://github.com/Fros1er/)不将本项目用于销售。若他人将本项目作为产品或产品的一部分提供（无论是否销售），应依照相关法律法规，自行承担安全维护等责任。
 本项目提供安全维护的期限为发布（指每次commit）后三天以内。任何使用项目的行为代表同意这一约定期限。
